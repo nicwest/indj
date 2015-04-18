@@ -2,19 +2,7 @@ import os
 import pytest
 import re
 from indj import settings
-
-try:
-    import django  # NOQA
-    has_django = True
-except ImportError:
-    has_django = False
-
-needs_django = pytest.mark.skipif(
-    has_django is False,
-    reason='django is required')
-no_django = pytest.mark.skipif(
-    has_django is True,
-    reason='django is installed')
+from conftest import needs_django, no_django
 
 
 @needs_django

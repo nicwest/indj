@@ -1,5 +1,6 @@
 import os
 
+DEFAULT_DJANGO_VERSION = (1, 8, 0, 'final', 0)
 
 try:
     from django import VERSION as django_version
