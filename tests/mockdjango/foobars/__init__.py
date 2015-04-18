@@ -1,0 +1,2 @@
+class That:
+    pass
