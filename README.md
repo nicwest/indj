@@ -1,4 +1,5 @@
-indj
+[![Build Status](https://travis-ci.org/nicwest/indj.svg?branch=master)](https://travis-ci.org/nicwest/indj)indj
+[![Coverage Status](https://coveralls.io/repos/nicwest/indj/badge.svg)](https://coveralls.io/r/nicwest/indj)
 ====
 
 command line lookup for django objects
