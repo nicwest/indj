@@ -69,3 +69,8 @@ class TestSettings:
         pattern = settings.Settings.EXCLUDE_DIRECTORY_PATTERNS[0]
         assert re.match(pattern, 'LC_MESSAGES')
         assert not re.match(pattern, 'VLC_MESSAGES')
+
+    def test_script_directory_contains_test_data(self):
+        script_dir = settings.Settings.SCRIPT_DIRECTORY
+        test_data = os.path.join(script_dir, 'data', 'test.json')
+        assert os.path.exists(test_data)

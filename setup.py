@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 try:
     long_description = open("README.md").read()
@@ -11,7 +11,8 @@ setup(
     description="A command line tool for looking up django object locations.",
     license="MIT",
     author="Nic West",
-    packages=find_packages(),
+    packages=['indj'],
+    package_data={'indj': ['data/*.json']},
     install_requires=['jedi==0.8.1'],
     long_description=long_description,
     classifiers=[
