@@ -12,4 +12,4 @@ env:
 install:
   - pip install tox
 script:
-  - tox -e $TOX_ENV
+  - tox -e $TOX_ENV term-missing
