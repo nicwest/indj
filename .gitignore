@@ -69,3 +69,5 @@ target/
 
 # Virtualenv
 .ve
+.nodj
+.dj
