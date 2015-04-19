@@ -4,6 +4,7 @@ import json
 from indj.settings import Settings
 from datetime import datetime
 from indj.index import DjangoIndex, DjangoSrc, DjangoJson
+from indj.handlers import LookupHandler, CreationHandler
 
 try:
     import django  # NOQA
@@ -55,8 +56,8 @@ def src(index_settings):
 
 
 @pytest.fixture
-def mockjson(tmpdir):
-    data = {
+def index_data():
+    index_data = {
         'data': {
             'Thing': [
                 'foobars.Thing',
@@ -69,10 +70,14 @@ def mockjson(tmpdir):
         'version': (1, 2, 3, 'final', 4),
         'created': '2015-04-18T12:30:45'
     }
+    return index_data
+
+
+@pytest.fixture
+def mockjson(tmpdir, index_data):
     filepath = os.path.join(str(tmpdir), 'django-1-2-3-final-4.json')
     with open(filepath, 'w') as fh:
-        json.dump(data, fh)
-
+        json.dump(index_data, fh)
     return filepath
 
 
@@ -91,8 +96,8 @@ def mockmethod():
             self.calls = []
             self.return_value = None
 
-        def __call__(self, *args):
-            self.calls.append(args)
+        def __call__(self, *args, **kwargs):
+            self.calls.append((args, kwargs, ))
             return self.return_value
 
         @property
@@ -105,3 +110,32 @@ def mockmethod():
             return all([arg_list in self.calls for arg_list in args])
 
     return MockMethod
+
+
+@pytest.fixture
+def lookup(index_settings):
+    return LookupHandler((1, 2, 3, 'final', 4), index_settings)
+
+
+@pytest.fixture
+def creation(index_settings):
+    test_dir = os.path.dirname(__file__)
+    src = os.path.join(test_dir, 'mockdjango')
+    return CreationHandler(src, index_settings)
+
+
+@pytest.fixture
+def data_files(tmpdir, index_data):
+    output = os.path.join(str(tmpdir), 'output')
+    package = os.path.join(str(tmpdir), 'package')
+    os.mkdir(output)
+    os.mkdir(package)
+    with open(os.path.join(output, 'django-1-2-3-final-4.json'), 'w') as fh:
+        json.dump(index_data, fh)
+    with open(os.path.join(package, 'django-1-2-3-final-4.json'), 'w') as fh:
+        json.dump(index_data, fh)
+    index_data['version'] = (3, 2, 1, 'alpha', 0)
+    with open(os.path.join(package, 'django-3-2-1-alpha-0.json'), 'w') as fh:
+        json.dump(index_data, fh)
+
+    return (output, package, )

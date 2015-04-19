@@ -1,5 +1,6 @@
 class DjangoIndexError(Exception):
-    message = None
+    pass
 
-    def __init__(self, message):
-        self.message = message
+
+class LookupHandlerError(Exception):
+    pass

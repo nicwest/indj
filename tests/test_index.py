@@ -15,35 +15,35 @@ class TestDjangoIndex:
         with pytest.raises(DjangoIndexError) as exceptinfo:
             index.validate()
         assert isinstance(exceptinfo.value, DjangoIndexError)
-        assert exceptinfo.value.message == 'Given index is empty or None'
+        assert exceptinfo.value.args == ('Given index is empty or None', )
 
     def test_validate_raises_exception_with_empty_data(self, index):
         index.data = {}
         with pytest.raises(DjangoIndexError) as exceptinfo:
             index.validate()
         assert isinstance(exceptinfo.value, DjangoIndexError)
-        assert exceptinfo.value.message == 'Given index is empty or None'
+        assert exceptinfo.value.args == ('Given index is empty or None', )
 
     def test_validate_raises_exception_with_non_dict_data(self, index):
         index.data = ['Not a dict']
         with pytest.raises(DjangoIndexError) as exceptinfo:
             index.validate()
         assert isinstance(exceptinfo.value, DjangoIndexError)
-        assert exceptinfo.value.message == 'Data is not a dict'
+        assert exceptinfo.value.args == ('Data is not a dict', )
 
     def test_validate_raises_exception_with_no_version(self, index):
         index.version = None
         with pytest.raises(DjangoIndexError) as exceptinfo:
             index.validate()
         assert isinstance(exceptinfo.value, DjangoIndexError)
-        assert exceptinfo.value.message == 'No Django version given'
+        assert exceptinfo.value.args == ('No Django version given', )
 
     def test_validate_raises_exception_with_no_created(self, index):
         index.created = None
         with pytest.raises(DjangoIndexError) as exceptinfo:
             index.validate()
         assert isinstance(exceptinfo.value, DjangoIndexError)
-        assert exceptinfo.value.message == 'Index has no created date'
+        assert exceptinfo.value.args == ('Index has no created date', )
 
     def test_to_dict_returns_dict(self, index):
         assert isinstance(index.to_dict(), dict)
@@ -72,7 +72,7 @@ class TestDjangoIndex:
         tmpdir.remove()
         with pytest.raises(DjangoIndexError) as errinfo:
             index.save()
-        assert errinfo.value.message == 'Output directory does not exist'
+        assert errinfo.value.args == ('Output directory does not exist', )
 
     def test_save_throws_error_when_data_filepath_exists(self, index, tmpdir):
         index.settings.JSON_OUTPUT_DIRECTORY = str(tmpdir)
@@ -81,7 +81,7 @@ class TestDjangoIndex:
         open(filepath, 'w').write('foo')
         with pytest.raises(DjangoIndexError) as errinfo:
             index.save()
-        assert errinfo.value.message == 'Output file already exists'
+        assert errinfo.value.args == ('Output file already exists', )
 
     def test_save_doesnt_throw_error_when_data_filepath_exists_and_overwite_true(self, index, tmpdir, monkeypatch, mockmethod):
         index.settings.JSON_OUTPUT_DIRECTORY = str(tmpdir)
@@ -204,7 +204,7 @@ class TestDjangoSrc:
         monkeypatch.setattr(src, '_get_definitions_from_file', mocked)
         generator = src.definitions_generator(['file.path', 'foo.bar'])
         [_ for _ in generator]
-        assert mocked.was_called_with(('file.path', ), ('foo.bar', ))
+        assert mocked.was_called_with((('file.path', ), {}), (('foo.bar', ), {}))
 
     def test_create_index_data_without_generator_calls_filepaths(self, src, monkeypatch, mockmethod):
         mocked = mockmethod()
@@ -221,7 +221,7 @@ class TestDjangoSrc:
         monkeypatch.setattr(src, 'definitions_generator', mocked_generator)
         monkeypatch.setattr(src, 'get_filepaths', mocked_filepaths)
         src.create_index_data()
-        assert mocked_generator.was_called_with((['foo.py', 'bar.py'], ))
+        assert mocked_generator.was_called_with(((['foo.py', 'bar.py'], ), {}))
 
     def test_create_index_data_with_generator_does_not_get_new_generator(self, src, monkeypatch, mockmethod):
         mocked_generator = mockmethod()
@@ -238,15 +238,15 @@ class TestDjangoSrc:
 
     def test_create_index_data_adds_definition_to_dict(self, src):
         fake_generator = (_ for _ in [
-            ('Thing', 'foobars.Thing', 'foobars.py', )])
+            ('Thing', 'foobars.Thing')])
         data = src.create_index_data(fake_generator)
         assert 'Thing' in data
         assert data['Thing'] == ['foobars.Thing']
 
     def test_create_index_data_adds_multiple_definitions_to_dict(self, src):
         fake_generator = (_ for _ in [
-            ('Thing', 'foobars.Thing', 'foobars.py', ),
-            ('Foo', 'foobars.Foo', 'foobars.py', )
+            ('Thing', 'foobars.Thing'),
+            ('Foo', 'foobars.Foo')
         ])
         data = src.create_index_data(fake_generator)
         assert 'Thing' in data
@@ -256,8 +256,8 @@ class TestDjangoSrc:
 
     def test_create_index_data_adds_import_path_to_existing_definition_in_dict(self, src):
         fake_generator = (_ for _ in [
-            ('Thing', 'foobars.Thing', 'foobars.py', ),
-            ('Thing', 'dohickies.Thing', 'dohickies.py', )
+            ('Thing', 'foobars.Thing'),
+            ('Thing', 'dohickies.Thing')
         ])
         data = src.create_index_data(fake_generator)
         assert 'Thing' in data
@@ -265,8 +265,8 @@ class TestDjangoSrc:
 
     def test_create_index_data_ignores_repeated_import_path(self, src):
         fake_generator = (_ for _ in [
-            ('Thing', 'foobars.Thing', 'foobars.py', ),
-            ('Thing', 'foobars.Thing', 'dohickies.py', )
+            ('Thing', 'foobars.Thing'),
+            ('Thing', 'foobars.Thing')
         ])
         data = src.create_index_data(fake_generator)
         assert 'Thing' in data

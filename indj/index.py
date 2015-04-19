@@ -99,7 +99,7 @@ class DjangoSrc(object):
             defs = jedi.defined_names(fh.read())
         module_import_path = self._get_module_import_path(path)
         items = [
-            (d.name, self._get_import_path(d.full_name, module_import_path))
+            (d.name, self._get_import_path(d.full_name, module_import_path), )
             for d in defs]
         return items
 
@@ -133,14 +133,16 @@ class DjangoSrc(object):
 
     def definitions_generator(self, filepaths):
         for path in filepaths:
-            yield self._get_definitions_from_file(path)
+            for item in self._get_definitions_from_file(path):
+                yield item
 
     def create_index_data(self, generator=None):
         if not generator:
             filepaths = self.get_filepaths()
             generator = self.definitions_generator(filepaths)
         data = {}
-        for name, path, source in generator:
+        for name, path in generator:
+            print(name)
             if name in data:
                 if path not in data[name]:
                     data[name].append(path)
