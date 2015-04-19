@@ -31,8 +31,6 @@ class LookupHandler(object):
             settings=self.settings)
 
 
-
-
 class CreationHandler(object):
 
     def __init__(self, src, settings):

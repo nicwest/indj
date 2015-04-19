@@ -18,5 +18,10 @@ setup(
     classifiers=[
         "Programming Language :: Python",
         "Programming Language :: Python :: 3.4",
-    ]
+    ],
+    entry_points={
+        'console_scripts': [
+            'indj = indj.main:main'
+        ]
+    }
 )

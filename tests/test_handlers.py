@@ -36,14 +36,14 @@ class TestLookupHandler:
     #def test_version_returns_tuple(self, lookup):
     #    assert isinstance(lookup.version, tuple)
 
-    @needs_django
-    def test_version_returns_env_django_version_when_django_installed(self, lookup):
-        from django import VERSION as django_version
-        assert lookup.version == django_version
+    #@needs_django
+    #def test_version_returns_env_django_version_when_django_installed(self, lookup):
+    #    from django import VERSION as django_version
+    #    assert lookup.version == django_version
 
-    @no_django
-    def test_version_returns_default_version_when_no_django_installed(self, lookup):
-        assert lookup.version == DEFAULT_DJANGO_VERSION
+    #@no_django
+    #def test_version_returns_default_version_when_no_django_installed(self, lookup):
+    #    assert lookup.version == DEFAULT_DJANGO_VERSION
 
 
 class TestCreationHandler:
