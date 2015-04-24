@@ -1,0 +1,6 @@
+{
+  "indj/*.py": { "alternate": "tests/test_{}.py" },
+  "indj/**/*.py": { "alternate": "tests/{}/test_{}.py" },
+  "tests/test_*.py": { "alternate": "indj/{}.py" },
+  "tests/**/test_*.py": { "alternate": "indj/{}/{}.py" }
+}
