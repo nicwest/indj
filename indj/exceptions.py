@@ -4,3 +4,11 @@ class DjangoIndexError(Exception):
 
 class LookupHandlerError(Exception):
     pass
+
+
+class ExactMatchNotFound(Exception):
+    pass
+
+
+class FuzzyMatchNotFound(Exception):
+    pass

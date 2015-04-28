@@ -1,49 +1,59 @@
 import pytest
 import os
 import types
-from conftest import needs_django, no_django
-from indj.settings import DEFAULT_DJANGO_VERSION
 from indj.index import DjangoSrc, DjangoIndex, DjangoJson
-from indj.exceptions import LookupHandlerError
+from indj.exceptions import (
+    LookupHandlerError, ExactMatchNotFound, FuzzyMatchNotFound)
 
 
 class TestLookupHandler:
 
-    def test_get_filepath_returns_matching_filepath(self, data_files, lookup):
-        output, package = data_files
-        lookup.settings.DATA_DIRECTORIES = [output, package]
+    def test_get_filepath_returns_matching_filepath(self, lookup):
         lookup.version = (3, 2, 1, 'alpha', 0)
         filepath = lookup.get_filepath()
+        package = lookup.settings.DATA_DIRECTORIES[1]
         assert filepath == os.path.join(package, 'django-3-2-1-alpha-0.json')
 
-    def test_get_filepath_returns_first_matching_filepath(self, data_files, lookup):
-        output, package = data_files
-        lookup.settings.DATA_DIRECTORIES = [output, package]
-        lookup.version = (1, 2, 3, 'final', 4)
+    def test_get_filepath_returns_first_matching_filepath(self, lookup):
         filepath = lookup.get_filepath()
+        output = lookup.settings.DATA_DIRECTORIES[0]
         assert filepath == os.path.join(output, 'django-1-2-3-final-4.json')
 
-    def test_get_filepath_raise_exception_when_file_not_found(self, data_files, lookup):
-        output, package = data_files
-        lookup.settings.DATA_DIRECTORIES = [output, package]
+    def test_get_filepath_raise_exception_when_file_not_found(self, lookup):
         lookup.version = (9, 9, 9, 'zeta', 9)
         with pytest.raises(LookupHandlerError) as errinfo:
             lookup.get_filepath()
         assert errinfo.value.args == (
             'No data file could be found for django version `9-9-9-zeta-9`', )
 
+    def test_get_django_json_returns_django_json_object(self, lookup):
+        assert isinstance(lookup.get_django_json(), DjangoJson)
 
-    #def test_version_returns_tuple(self, lookup):
-    #    assert isinstance(lookup.version, tuple)
+    def test_get_django_index_returns_django_index(self, lookup):
+        filepath = lookup.get_filepath()
+        django_json = DjangoJson(filepath, lookup.settings)
+        assert isinstance(lookup.get_django_index(django_json), DjangoIndex)
 
-    #@needs_django
-    #def test_version_returns_env_django_version_when_django_installed(self, lookup):
-    #    from django import VERSION as django_version
-    #    assert lookup.version == django_version
+    def test_exact_match_returns_paths_that_exactly_match_query_string(self, lookup, index_data):
+        expected = index_data['data']['Thing']
+        assert lookup.exact_match('Thing') == expected
 
-    #@no_django
-    #def test_version_returns_default_version_when_no_django_installed(self, lookup):
-    #    assert lookup.version == DEFAULT_DJANGO_VERSION
+    def test_exact_match_raises_exception_when_key_not_found(self, lookup):
+        with pytest.raises(ExactMatchNotFound) as expinfo:
+            lookup.exact_match('Thong')
+        assert expinfo.value.args == ('Exact match not found for `Thong`', )
+
+    def test_fuzzy_match_returns_paths_that_roughly_match_query_string(self, lookup, index_data):
+        expected = [
+            path for path in
+            index_data['data']['Thing'] + index_data['data']['Thang']
+        ]
+        assert lookup.fuzzy_match('Thong') == expected
+
+    def test_fuzzy_match_raises_exception_when_no_matches_found(self, lookup):
+        with pytest.raises(FuzzyMatchNotFound) as expinfo:
+            lookup.fuzzy_match('DoHicky')
+        assert expinfo.value.args == ('Fuzzy match not found for `DoHicky`', )
 
 
 class TestCreationHandler:

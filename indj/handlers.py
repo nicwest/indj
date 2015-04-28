@@ -1,8 +1,11 @@
 import os
+import difflib
+import itertools
 from datetime import datetime
 from indj import utils
-from indj.index import DjangoIndex, DjangoSrc
-from indj.exceptions import LookupHandlerError
+from indj.index import DjangoIndex, DjangoSrc, DjangoJson
+from indj.exceptions import (
+    LookupHandlerError, ExactMatchNotFound, FuzzyMatchNotFound)
 
 
 class LookupHandler(object):
@@ -21,7 +24,7 @@ class LookupHandler(object):
                 utils.version_as_string(self.version)))
 
     def get_django_json(self):
-        return DjangoSrc()
+        return DjangoJson(self.get_filepath(), self.settings)
 
     def get_django_index(self, django_json):
         return DjangoIndex(
@@ -29,6 +32,24 @@ class LookupHandler(object):
             version=django_json.get_version(),
             created=django_json.get_created(),
             settings=self.settings)
+
+    def exact_match(self, query):
+        django_json = self.get_django_json()
+        django_index = self.get_django_index(django_json)
+        if query not in django_index.names:
+            raise ExactMatchNotFound(
+                'Exact match not found for `{0}`'.format(query))
+        return django_index.data[query]
+
+    def fuzzy_match(self, query):
+        django_json = self.get_django_json()
+        django_index = self.get_django_index(django_json)
+        matches = difflib.get_close_matches(query, django_index.names)
+        if not matches:
+            raise FuzzyMatchNotFound(
+                'Fuzzy match not found for `{0}`'.format(query))
+        paths = [django_index.data[match] for match in matches]
+        return list(itertools.chain(*paths))
 
 
 class CreationHandler(object):

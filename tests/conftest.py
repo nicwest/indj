@@ -63,6 +63,9 @@ def index_data():
                 'foobars.Thing',
                 'dohickies.Thing'
             ],
+            'Thang': [
+                'dat.Thang',
+            ],
             'PewPew': [
                 'foobars.PewPew'
             ]
@@ -113,8 +116,11 @@ def mockmethod():
 
 
 @pytest.fixture
-def lookup(index_settings):
-    return LookupHandler((1, 2, 3, 'final', 4), index_settings)
+def lookup(index_settings, data_files):
+    output, package = data_files
+    index_settings.DATA_DIRECTORIES = [output, package]
+    lookup = LookupHandler((1, 2, 3, 'final', 4), index_settings)
+    return lookup
 
 
 @pytest.fixture

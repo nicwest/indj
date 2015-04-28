@@ -280,6 +280,9 @@ class TestDjangoJson:
                 'foobars.Thing',
                 'dohickies.Thing'
             ],
+            'Thang': [
+                'dat.Thang',
+            ],
             'PewPew': [
                 'foobars.PewPew'
             ]
