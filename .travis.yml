@@ -11,6 +11,9 @@ env:
   - TOX_ENV=py27-django18
 install:
   - pip install tox
+before_script:
+  - mkdir ~/.indj
+  - mkdir ~/.indj/data
 script:
   - tox -e $TOX_ENV term-missing
 
