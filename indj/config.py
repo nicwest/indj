@@ -37,3 +37,6 @@ class Settings(object):
         r'^test_[^/]*$',  # test files
         r'^\d{4}_[^/]*\.py$',  # migrations
     ]
+
+    OVERWRITE = False
+    EXACT_MATCH = False

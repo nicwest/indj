@@ -1,7 +1,7 @@
 import os
 import pytest
 import json
-from indj.settings import Settings
+from indj.config import Settings
 from datetime import datetime
 from indj.index import DjangoIndex, DjangoSrc, DjangoJson
 from indj.handlers import LookupHandler, CreationHandler
@@ -71,7 +71,7 @@ def index_data():
             ]
         },
         'version': (1, 2, 3, 'final', 4),
-        'created': '2015-04-18T12:30:45'
+        'created': '2015-04-18T12:30:45.00000'
     }
     return index_data
 
@@ -119,15 +119,16 @@ def mockmethod():
 def lookup(index_settings, data_files):
     output, package = data_files
     index_settings.DATA_DIRECTORIES = [output, package]
-    lookup = LookupHandler((1, 2, 3, 'final', 4), index_settings)
+    index_settings.DJANGO_VERSION = (1, 2, 3, 'final', 4)
+    lookup = LookupHandler(index_settings)
     return lookup
 
 
 @pytest.fixture
 def creation(index_settings):
     test_dir = os.path.dirname(__file__)
-    src = os.path.join(test_dir, 'mockdjango')
-    return CreationHandler(src, index_settings)
+    index_settings.DJANGO_DIRECTORY = os.path.join(test_dir, 'mockdjango')
+    return CreationHandler(index_settings)
 
 
 @pytest.fixture
@@ -145,3 +146,26 @@ def data_files(tmpdir, index_data):
         json.dump(index_data, fh)
 
     return (output, package, )
+
+
+@pytest.fixture
+def mock_args(monkeypatch):
+    import sys
+
+    def set_args(args):
+        monkeypatch.setattr(sys, 'argv', ['indj'] + args)
+
+    return set_args
+
+
+@pytest.fixture
+def args():
+    class Args(object):
+        exact = False
+        django_version = None
+        names_only = False
+        create = False
+        source = None
+        silent = False
+
+    return Args()

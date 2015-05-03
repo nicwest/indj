@@ -68,14 +68,14 @@ class TestDjangoIndex:
         assert index.is_valid
 
     def test_save_throws_error_if_output_directory_doesnt_exist(self, index, tmpdir):
-        index.settings.JSON_OUTPUT_DIRECTORY = str(tmpdir)
+        index.settings.OUTPUT_DATA_DIRECTORY = str(tmpdir)
         tmpdir.remove()
         with pytest.raises(DjangoIndexError) as errinfo:
             index.save()
         assert errinfo.value.args == ('Output directory does not exist', )
 
     def test_save_throws_error_when_data_filepath_exists(self, index, tmpdir):
-        index.settings.JSON_OUTPUT_DIRECTORY = str(tmpdir)
+        index.settings.OUTPUT_DATA_DIRECTORY = str(tmpdir)
         index.version = (1, 2, 3, 'final', 4)
         filepath = os.path.join(str(tmpdir), 'django-1-2-3-final-4.json')
         open(filepath, 'w').write('foo')
@@ -84,19 +84,20 @@ class TestDjangoIndex:
         assert errinfo.value.args == ('Output file already exists', )
 
     def test_save_doesnt_throw_error_when_data_filepath_exists_and_overwite_true(self, index, tmpdir, monkeypatch, mockmethod):
-        index.settings.JSON_OUTPUT_DIRECTORY = str(tmpdir)
+        index.settings.OUTPUT_DATA_DIRECTORY = str(tmpdir)
+        index.settings.OVERWRITE = True
         index.version = (1, 2, 3, 'final', 4)
         mocked = mockmethod()
         monkeypatch.setattr(index, 'to_dict', mocked)
 
         filepath = os.path.join(str(tmpdir), 'django-1-2-3-final-4.json')
         open(filepath, 'w').write('foo')
-        index.save(overwrite=True)
+        index.save()
         assert mocked.called
 
     def test_save_calls_to_dict_when_writing_file(self, index, tmpdir, monkeypatch, mockmethod):
-        index.settings.JSON_OUTPUT_DIRECTORY = str(tmpdir)
-        index.version = (1, 2, 3, 'final', 4)
+        index.settings.OUTPUT_DATA_DIRECTORY = str(tmpdir)
+        index.settings.DJANGO_VERSION = (1, 2, 3, 'final', 4)
         mocked = mockmethod()
         monkeypatch.setattr(index, 'to_dict', mocked)
 
@@ -288,7 +289,7 @@ class TestDjangoJson:
             ]
         },
         'version': [1, 2, 3, 'final', 4],
-        'created': '2015-04-18T12:30:45'
+        'created': '2015-04-18T12:30:45.00000'
     }
 
     def test_data_loads_json(self, djson):
@@ -308,7 +309,7 @@ class TestDjangoJson:
         assert expected_version == version
 
     def test_get_created_returns_datetime(self, djson):
-        expected_created = datetime(2015, 4, 18, 12, 30, 45)
+        expected_created = datetime(2015, 4, 18, 12, 30, 45, 0)
         created = djson.get_created()
         assert isinstance(created, datetime)
         assert expected_created == created

@@ -9,7 +9,7 @@ from indj.exceptions import (
 class TestLookupHandler:
 
     def test_get_filepath_returns_matching_filepath(self, lookup):
-        lookup.version = (3, 2, 1, 'alpha', 0)
+        lookup.settings.DJANGO_VERSION = (3, 2, 1, 'alpha', 0)
         filepath = lookup.get_filepath()
         package = lookup.settings.DATA_DIRECTORIES[1]
         assert filepath == os.path.join(package, 'django-3-2-1-alpha-0.json')
@@ -20,7 +20,7 @@ class TestLookupHandler:
         assert filepath == os.path.join(output, 'django-1-2-3-final-4.json')
 
     def test_get_filepath_raise_exception_when_file_not_found(self, lookup):
-        lookup.version = (9, 9, 9, 'zeta', 9)
+        lookup.settings.DJANGO_VERSION = (9, 9, 9, 'zeta', 9)
         with pytest.raises(LookupHandlerError) as errinfo:
             lookup.get_filepath()
         assert errinfo.value.args == (
@@ -35,24 +35,32 @@ class TestLookupHandler:
         assert isinstance(lookup.get_django_index(django_json), DjangoIndex)
 
     def test_exact_match_returns_paths_that_exactly_match_query_string(self, lookup, index_data):
+        django_json = lookup.get_django_json()
+        django_index = lookup.get_django_index(django_json)
         expected = index_data['data']['Thing']
-        assert lookup.exact_match('Thing') == expected
+        assert lookup.exact_match('Thing', django_json, django_index) == expected
 
     def test_exact_match_raises_exception_when_key_not_found(self, lookup):
+        django_json = lookup.get_django_json()
+        django_index = lookup.get_django_index(django_json)
         with pytest.raises(ExactMatchNotFound) as expinfo:
-            lookup.exact_match('Thong')
+            lookup.exact_match('Thong', django_json, django_index)
         assert expinfo.value.args == ('Exact match not found for `Thong`', )
 
     def test_fuzzy_match_returns_paths_that_roughly_match_query_string(self, lookup, index_data):
+        django_json = lookup.get_django_json()
+        django_index = lookup.get_django_index(django_json)
         expected = [
             path for path in
             index_data['data']['Thing'] + index_data['data']['Thang']
         ]
-        assert lookup.fuzzy_match('Thong') == expected
+        assert lookup.fuzzy_match('Thong', django_json, django_index) == expected
 
     def test_fuzzy_match_raises_exception_when_no_matches_found(self, lookup):
+        django_json = lookup.get_django_json()
+        django_index = lookup.get_django_index(django_json)
         with pytest.raises(FuzzyMatchNotFound) as expinfo:
-            lookup.fuzzy_match('DoHicky')
+            lookup.fuzzy_match('DoHicky', django_json, django_index)
         assert expinfo.value.args == ('Fuzzy match not found for `DoHicky`', )
 
 

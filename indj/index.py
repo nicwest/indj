@@ -43,15 +43,15 @@ class DjangoIndex(object):
             return False
         return True
 
-    def save(self, overwrite=False):
-        data_directory = self.settings.JSON_OUTPUT_DIRECTORY
+    def save(self):
+        data_directory = self.settings.OUTPUT_DATA_DIRECTORY
         data_filepath = utils.data_filepath_from_version(
             data_directory, self.version)
 
         if not os.path.exists(data_directory):
             raise DjangoIndexError('Output directory does not exist')
 
-        if os.path.exists(data_filepath) and not overwrite:
+        if os.path.exists(data_filepath) and not self.settings.OVERWRITE:
             raise DjangoIndexError('Output file already exists')
 
         with open(data_filepath, 'w') as fh:
@@ -142,7 +142,6 @@ class DjangoSrc(object):
             generator = self.definitions_generator(filepaths)
         data = {}
         for name, path in generator:
-            print(name)
             if name in data:
                 if path not in data[name]:
                     data[name].append(path)
@@ -174,5 +173,5 @@ class DjangoJson(object):
     def get_created(self):
         created = datetime.datetime.strptime(
             self.data['created'],
-            '%Y-%m-%dT%H:%M:%S')
+            '%Y-%m-%dT%H:%M:%S.%f')
         return created

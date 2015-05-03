@@ -27,3 +27,9 @@ def json_serialize(obj):
     else:
         raise TypeError(
             'Object of type %s with value of %s is not JSON serializable' % (type(obj), repr(obj)))
+
+
+def version_as_tuple(version):
+    split = re.split(r'[\.-]', version)
+    return tuple(int(x) if hasattr(x, 'isdigit') and x.isdigit() else x
+                 for x in split)
