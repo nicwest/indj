@@ -10,10 +10,6 @@ class TestGetArgs:
         args = get_args(['foo'])
         assert isinstance(args, argparse.Namespace)
 
-    def test_exits_with_no_arguments(self):
-        with pytest.raises(SystemExit):
-            get_args([])
-
     def test_exact(self):
         args = get_args(['fooo'])
         assert args.exact is False
@@ -27,9 +23,6 @@ class TestGetArgs:
     def test_django_version(self):
         args = get_args(['fooo'])
         assert args.django_version is None
-
-        with pytest.raises(SystemExit):
-            args = get_args(['--django-version', 'fooo'])
 
         args = get_args(['--django-version', '1.2.3-final.4', 'fooo'])
         assert args.django_version == (1, 2, 3, 'final', 4)
@@ -61,9 +54,6 @@ class TestGetArgs:
         args = get_args(['fooo'])
         assert args.source is None
 
-        with pytest.raises(SystemExit):
-            args = get_args(['--source', 'fooo'])
-
         args = get_args(['--source', 'path/to/django', 'fooo'])
         assert args.source == 'path/to/django'
 
@@ -89,7 +79,7 @@ class TestGetSettings:
         settings = get_settings(args)
         assert settings.DJANGO_VERSION == (1, 2, 3, 'final', 4)
 
-    def test_adjusts_settings_if_cource_is_in_args(self, args):
+    def test_adjusts_settings_if_source_is_in_args(self, args):
         args.source = 'path/to/django'
         settings = get_settings(args)
         assert settings.DJANGO_DIRECTORY == 'path/to/django'

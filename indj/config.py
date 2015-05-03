@@ -1,6 +1,6 @@
 import os
 
-DEFAULT_DJANGO_VERSION = (1, 8, 0, 'final', 0)
+DEFAULT_DJANGO_VERSION = (1, 8, 1, 'final', 0)
 
 try:
     from django import VERSION as django_version
@@ -26,7 +26,7 @@ class Settings(object):
         PACKAGE_DATA_DIRECTORY,
     ]
 
-    DJANGO_VERSION = ENV_DJANGO_VERSION
+    DJANGO_VERSION = ENV_DJANGO_VERSION if ENV_DJANGO_VERSION else DEFAULT_DJANGO_VERSION
     DJANGO_DIRECTORY = ENV_DJANGO_DIRECTORY
 
     EXCLUDE_DIRECTORY_PATTERNS = [

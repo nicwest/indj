@@ -32,12 +32,18 @@ def get_args(argv):
     parser.add_argument('--source', metavar='/path/to/django',
                         dest='source',
                         help='specify source directory')
+    parser.add_argument('-o', '--overwrite', action='store_true',
+                        dest='overwrite',
+                        help='overwrite existing data file when necessary')
+    parser.add_argument('--output-dir', action='store_true',
+                        dest='output_dir',
+                        help='change default output directory')
 
     # general
     parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.1')
     parser.add_argument('-s', '--silent', action='store_true', dest='silent',
                         help='silence all non essential stdout and stderr')
-    parser.add_argument('query')
+    parser.add_argument('query', nargs='?')
 
     args = parser.parse_args(argv)
 
@@ -52,6 +58,10 @@ def get_settings(args):
         settings.DJANGO_DIRECTORY = args.source
     if args.exact:
         settings.EXACT_MATCH = True
+    if args.overwrite:
+        settings.OVERWRITE = True
+    if args.output_dir:
+        settings.OUTPUT_DATA_DIRECTORY = args.output_dir
     return settings
 
 

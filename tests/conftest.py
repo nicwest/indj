@@ -167,5 +167,7 @@ def args():
         create = False
         source = None
         silent = False
+        overwrite = False
+        output_dir = None
 
     return Args()
