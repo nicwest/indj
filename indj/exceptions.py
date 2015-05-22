@@ -1,14 +1,21 @@
-class DjangoIndexError(Exception):
-    pass
+class IndjHumanReadableError(Exception):
+    error_number = 1
+
+    def get_message(self):
+        return '{0}\n'.format(self.args[0])
 
 
-class LookupHandlerError(Exception):
-    pass
+class DjangoIndexError(IndjHumanReadableError):
+    error_number = 3
 
 
-class ExactMatchNotFound(Exception):
-    pass
+class LookupHandlerError(IndjHumanReadableError):
+    error_number = 4
 
 
-class FuzzyMatchNotFound(Exception):
-    pass
+class ExactMatchNotFound(IndjHumanReadableError):
+    error_number = 5
+
+
+class FuzzyMatchNotFound(IndjHumanReadableError):
+    error_number = 6

@@ -40,3 +40,6 @@ class Settings(object):
 
     OVERWRITE = False
     EXACT_MATCH = False
+    FUZZY_MATCH = False
+
+    MAX_RESULTS = 10

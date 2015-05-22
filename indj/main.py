@@ -3,6 +3,7 @@ import argparse
 from indj.config import Settings
 from indj.utils import version_as_tuple
 from indj.handlers import CreationHandler, LookupHandler, NoisyCreationHandler
+from indj.exceptions import IndjHumanReadableError
 
 
 class DjangoVersionAction(argparse.Action):
@@ -18,6 +19,8 @@ def get_args(argv):
     # lookup options
     parser.add_argument('-e', '--exact', action='store_true', dest='exact',
                         help='only return exact matches')
+    parser.add_argument('-f', '--fuzzy', action='store_true', dest='fuzzy',
+                        help='return fuzzy matches')
     parser.add_argument('--django-version', metavar='X.Y.Z',
                         dest='django_version', action=DjangoVersionAction,
                         help='query specific version of django, defaults to installed or latest version')
@@ -58,6 +61,8 @@ def get_settings(args):
         settings.DJANGO_DIRECTORY = args.source
     if args.exact:
         settings.EXACT_MATCH = True
+    if args.fuzzy:
+        settings.FUZZY_MATCH = True
     if args.overwrite:
         settings.OVERWRITE = True
     if args.output_dir:
@@ -69,15 +74,26 @@ def main(*args, **kwargs):
     args = get_args(sys.argv[1:])
     settings = get_settings(args)
     if args.create:
-        handler_class = CreationHandler if args.silent else NoisyCreationHandler
-        handler = handler_class(settings)
-        handler.create()
+        try:
+            handler_class = CreationHandler if args.silent else NoisyCreationHandler
+            handler = handler_class(settings)
+            handler.create()
+        except IndjHumanReadableError as e:
+            sys.stderr.write(e.get_message())
+            sys.stderr.flush()
+            exit(e.error_number)
+
     else:
-        handler = LookupHandler(settings)
-        matches = handler.lookup(args.query)
-        for match in matches:
-            sys.stdout.write('{}\n'.format(match))
-        sys.stdout.flush()
+        try:
+            handler = LookupHandler(settings)
+            matches = handler.lookup(args.query)
+            for match in matches:
+                sys.stdout.write('{}\n'.format(match))
+            sys.stdout.flush()
+        except IndjHumanReadableError as e:
+            sys.stderr.write(e.get_message())
+            sys.stderr.flush()
+            exit(e.error_number)
 
 
 if __name__ == '__main__':

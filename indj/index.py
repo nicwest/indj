@@ -1,5 +1,6 @@
 import json
 import jedi
+from jedi.evaluate.representation import ModuleWrapper
 import fnmatch
 import os
 import re
@@ -19,6 +20,9 @@ class DjangoIndex(object):
     @property
     def names(self):
         return sorted(list(self.data.keys()))
+
+    def __len__(self):
+        return self.names.__len__()
 
     def validate(self):
         if not self.data:
@@ -94,13 +98,29 @@ class DjangoSrc(object):
             dot='.' if relpath else '',
             path=relpath.replace(os.path.sep, '.'))
 
+    def _filter_definitions(self, definitions):
+        for definition in definitions:
+            is_import = definition.type == u'import'
+            if is_import:
+                continue
+            #has_follow = hasattr(definition, '_follow_statements_imports')
+            #if is_import and has_follow:
+            #    imports = definition._follow_statements_imports()
+            #    # NOTE: This assumes that all definitions at this point will
+            #    # only be importing one thing.
+            #    if imports and isinstance(imports[0], ModuleWrapper):
+            #        continue
+            yield definition
+        
     def _get_definitions_from_file(self, path):
         with open(path, 'r') as fh:
-            defs = jedi.defined_names(fh.read())
+            raw_definitions = jedi.defined_names(fh.read())
+        definitions = self._filter_definitions(raw_definitions)
+        #definitions = raw_definitions
         module_import_path = self._get_module_import_path(path)
         items = [
             (d.name, self._get_import_path(d.full_name, module_import_path), )
-            for d in defs]
+            for d in definitions]
         return items
 
     def get_filepaths(self):
